@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desa Kolisia B — Portal Publik &amp; Sistem Administrasi Desa</title>
+  <meta name="description" content="Portal Resmi Desa Kolisia B, Kecamatan Magepanda, Kabupaten Sikka, Flores, Nusa Tenggara Timur. Layanan Surat Online, Transparansi APBDes &amp; Bansos, Lapor Warga, BUMDes, dan Peta Lokasi GPS.">
+  <meta name="theme-color" content="#213328">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Banner Peringatan Jika URL API Backend Belum Dikonfigurasi -->
+  <div id="apiConfigBanner" class="config-banner hidden" role="region" aria-label="Pengaturan Koneksi Backend">
+    <div class="container config-banner-inner">
+      <div class="config-banner-text">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>Backend Belum Terhubung:</strong> Pasang URL Web App Google Apps Script agar seluruh data Desa Kolisia B termuat langsung dari Google Sheets.</span>
+      </div>
+      <button type="button" class="btn btn-sm btn-primary" data-action="open-api-modal">Hubungkan URL API</button>
+    </div>
+  </div>
+
+  <!-- Header & Navigasi -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <a href="#beranda" class="brand" aria-label="Beranda Desa Kolisia B">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="40" height="36" viewBox="0 0 44 36" fill="none" stroke="#213328" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 28c7-6 13-16 20-16s13 10 20 16"/>
+            <path d="M12 28v-8l10-6 10 6v8"/>
+            <path d="M22 14V6"/>
+            <path d="M19 9h6"/>
+            <path d="M4 32c10-2 26-2 36 0" stroke="#D16014"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-sub">PEMERINTAH DESA</span>
+          <strong class="brand-title" id="navVillageName">DESA KOLISIA B</strong>
+          <span class="brand-loc">MAGEPANDA • SIKKA</span>
+        </span>
+      </a>
+
+      <nav class="nav-desktop" aria-label="Navigasi Utama">
+        <a href="#beranda" class="nav-link">BERANDA</a>
+        <a href="#layanan-surat" class="nav-link">SURAT ONLINE</a>
+        <a href="#transparansi" class="nav-link">TRANSPARANSI</a>
+        <a href="#bumdes" class="nav-link">BUMDES</a>
+        <a href="#lokasi-gps" class="nav-link">LOKASI GPS</a>
+        <div class="nav-dropdown">
+          <button type="button" class="nav-link nav-dropdown-btn" id="moreMenuBtn" aria-expanded="false" aria-haspopup="true">
+            LAINNYA
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="nav-dropdown-menu hidden" id="moreMenuDropdown">
+            <a href="#berita" class="dropdown-item">Berita &amp; Pengumuman</a>
+            <a href="#lapor-warga" class="dropdown-item">Lapor Warga (Pemdes/BPD)</a>
+            <a href="#pemerintahan" class="dropdown-item">Perangkat &amp; Lembaga Desa</a>
+            <button type="button" class="dropdown-item dropdown-btn" data-action="open-api-modal">Pengaturan Koneksi API</button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="icon-btn" id="quickSearchBtn" title="Cari Berita atau Produk" aria-label="Cari di Portal">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <button type="button" class="btn btn-primary btn-nav-cta" id="authActionBtn" data-action="open-auth">
+          LOGIN ADMIN
+        </button>
+        <button type="button" class="icon-btn mobile-toggle" id="mobileMenuBtn" aria-label="Buka Menu" aria-expanded="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Menu -->
+    <div id="mobileDrawer" class="mobile-drawer hidden">
+      <div class="container mobile-drawer-links">
+        <a href="#beranda" class="drawer-link">Beranda</a>
+        <a href="#layanan-surat" class="drawer-link">Layanan Surat Online</a>
+        <a href="#transparansi" class="drawer-link">Transparansi APBDes &amp; Bansos</a>
+        <a href="#berita" class="drawer-link">Berita &amp; Pengumuman</a>
+        <a href="#lapor-warga" class="drawer-link">Lapor Warga (Pemdes &amp; BPD)</a>
+        <a href="#pemerintahan" class="drawer-link">Perangkat &amp; Lembaga Desa</a>
+        <a href="#bumdes" class="drawer-link">BUMDes &amp; Marketplace</a>
+        <a href="#lokasi-gps" class="drawer-link">Peta Lokasi &amp; GPS</a>
+        <button type="button" class="drawer-link drawer-btn" data-action="open-api-modal">Pengaturan Koneksi API</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- TAMPILAN UTAMA PUBLIK -->
+  <main id="publicPortal">
+    <!-- Hero Section -->
+    <section id="beranda" class="hero-section">
+      <div class="hero-bg" id="heroBg"></div>
+      <div class="hero-scrim"></div>
+      <div class="container hero-content">
+        <span class="hero-eyebrow">KECAMATAN MAGEPANDA • KABUPATEN SIKKA • FLORES, NTT</span>
+        <h1 class="hero-title" id="heroTitle">Selamat Datang di Desa Kolisia B</h1>
+        <p class="hero-subtitle" id="heroSubtitle">Kecamatan Magepanda, Kabupaten Sikka — Flores, Nusa Tenggara Timur</p>
+        <div class="hero-ctas">
+          <a href="#layanan-surat" class="btn btn-primary btn-lg">
+            AJUKAN SURAT ONLINE
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="#lokasi-gps" class="btn btn-outline-dark btn-lg">PETA &amp; JELAJAHI DESA</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Kartu Akses Cepat (Overlapping Hero) -->
+    <section class="quick-strip" aria-label="Akses Cepat Layanan">
+      <div class="container">
+        <div class="quick-grid">
+          <a href="#layanan-surat" class="quick-card">
+            <span class="quick-icon" aria-hidden="true">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#5D7A58" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13" stroke="#D16014"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+            </span>
+            <div>
+              <h3>Surat Online</h3>
+              <p>SKU, Domisili, SKTM &amp; Tracking</p>
+            </div>
+          </a>
+          <a href="#transparansi" class="quick-card">
+            <span class="quick-icon" aria-hidden="true">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#5D7A58" stroke-width="1.7"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" stroke="#D16014"/></svg>
+            </span>
+            <div>
+              <h3>Cek Bansos</h3>
+              <p>BLT, DTKS, Pangan &amp; Stunting</p>
+            </div>
+          </a>
+          <a href="#lapor-warga" class="quick-card">
+            <span class="quick-icon" aria-hidden="true">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#5D7A58" stroke-width="1.7"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9" stroke="#D16014"/><line x1="8" y1="13" x2="12" y2="13"/></svg>
+            </span>
+            <div>
+              <h3>Lapor Warga</h3>
+              <p>Aspirasi ke Pemdes &amp; BPD</p>
+            </div>
+          </a>
+          <a href="#bumdes" class="quick-card">
+            <span class="quick-icon" aria-hidden="true">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#5D7A58" stroke-width="1.7"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0" stroke="#D16014"/></svg>
+            </span>
+            <div>
+              <h3>BUMDes &amp; Pasar</h3>
+              <p>Produk Lokal Desa Kolisia B</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Berita & Informasi Desa -->
+    <section id="berita" class="section-block">
+      <div class="container">
+        <div class="section-head">
+          <div class="section-title-wrap">
+            <h2 class="section-heading">BERITA &amp; PENGUMUMAN</h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D16014" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          </div>
+          <div class="section-tools">
+            <input type="search" id="publicNewsSearch" class="input-compact" placeholder="Cari berita..." aria-label="Cari berita">
+            <select id="publicNewsFilter" class="input-compact" aria-label="Filter kategori berita">
+              <option value="Semua">Semua Kategori</option>
+              <option value="PENGUMUMAN">Pengumuman</option>
+              <option value="KEGIATAN">Kegiatan</option>
+              <option value="PEMBANGUNAN">Pembangunan</option>
+              <option value="KESEHATAN">Kesehatan</option>
+            </select>
+          </div>
+        </div>
+        <div id="publicNewsGrid" class="news-grid">
+          <div class="empty-state">Memuat berita terbaru dari server desa...</div>
+        </div>
+        <div id="publicNewsPagination" class="pagination-bar"></div>
+      </div>
+    </section>
+
+    <!-- Banner Ringkasan Desa (Adaptasi Discover Banner dari Referensi) -->
+    <section class="section-block section-tight">
+      <div class="container">
+        <div class="discover-banner">
+          <div class="discover-art" aria-hidden="true">
+            <svg viewBox="0 0 240 130" fill="none" stroke="#6E8469" stroke-width="1.3">
+              <path d="M10 110 Q 55 45, 110 85 T 230 65"/>
+              <path d="M0 120 Q 75 75, 145 100 T 235 95" opacity="0.65"/>
+              <path d="M35 95 v-18 l-8 8 m8 -8 l8 8" stroke-width="1.2"/>
+              <path d="M62 88 v-22 l-9 9 m9 -9 l9 9" stroke-width="1.2"/>
+              <circle cx="185" cy="34" r="10" stroke="#D16014" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="discover-copy">
+            <span class="discover-label">MENGENAL DESA KOLISIA B</span>
+            <h2>Pesona Alam Flores &amp; Layanan Publik Terbuka</h2>
+            <p id="discoverDesc">Berada di Kecamatan Magepanda, Kabupaten Sikka, Desa Kolisia B memadukan potensi pertanian, pesisir, dan keterbukaan layanan digital bagi seluruh warga.</p>
+            <a href="#lokasi-gps" class="btn btn-primary">
+              LIHAT PETA LOKASI GPS
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+          <div class="discover-stats">
+            <div class="stat-circle-item">
+              <div class="stat-circle">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5D7A58" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <strong id="statPenduduk">0</strong>
+              <span>Penduduk Terdata</span>
+            </div>
+            <div class="stat-circle-item">
+              <div class="stat-circle">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5D7A58" stroke-width="1.7"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+              </div>
+              <strong id="statApbdes">0%</strong>
+              <span>Realisasi APBDes</span>
+            </div>
+            <div class="stat-circle-item">
+              <div class="stat-circle">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5D7A58" stroke-width="1.7"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01" stroke="#D16014"/></svg>
+              </div>
+              <strong id="statSurat">0</strong>
+              <span>Surat Terbit</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pelayanan Surat Mandiri -->
+    <section id="layanan-surat" class="section-block">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">PELAYANAN PUBLIK MANDIRI</span>
+            <h2 class="section-heading">Pengajuan, Tracking &amp; Cetak Surat Resmi</h2>
+          </div>
+          <div class="pill-tabs" role="tablist">
+            <button type="button" class="pill-tab active" data-surat-tab="ajukan">Ajukan Surat</button>
+            <button type="button" class="pill-tab" data-surat-tab="lacak">Lacak &amp; Cetak PDF</button>
+            <button type="button" class="pill-tab" data-surat-tab="verifikasi">Cek Keaslian QR</button>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <!-- Tab 1: Ajukan Surat -->
+          <form id="formAjukanSurat" class="surat-pane">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="srtJenis">Jenis Surat Keterangan *</label>
+                <select id="srtJenis" required>
+                  <option value="Surat Keterangan Usaha (SKU)">Surat Keterangan Usaha (SKU)</option>
+                  <option value="Surat Keterangan Domisili">Surat Keterangan Domisili</option>
+                  <option value="Surat Keterangan Tidak Mampu (SKTM)">Surat Keterangan Tidak Mampu (SKTM)</option>
+                  <option value="Surat Pengantar SKCK">Surat Pengantar SKCK</option>
+                  <option value="Surat Keterangan Kematian">Surat Keterangan Kematian</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="srtNik">NIK Pemohon (16 Digit) *</label>
+                <input type="text" id="srtNik" maxlength="16" pattern="[0-9]{16}" placeholder="Contoh: 5307051203880001" required>
+              </div>
+              <div class="form-group">
+                <label for="srtNama">Nama Lengkap Sesuai KTP *</label>
+                <input type="text" id="srtNama" placeholder="Nama lengkap pemohon" required>
+              </div>
+              <div class="form-group">
+                <label for="srtTtl">Tempat, Tanggal Lahir *</label>
+                <input type="text" id="srtTtl" placeholder="Contoh: Kolisia, 12 Maret 1988" required>
+              </div>
+              <div class="form-group">
+                <label for="srtDusun">Alamat / Dusun &amp; RT *</label>
+                <input type="text" id="srtDusun" placeholder="Contoh: Dusun Kolisia Timur, RT 001" required>
+              </div>
+              <div class="form-group">
+                <label for="srtKeperluan">Keperluan Pengajuan *</label>
+                <input type="text" id="srtKeperluan" placeholder="Contoh: Syarat pengajuan modal usaha / beasiswa" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="srtDetail" id="srtDetailLabel">Keterangan Tambahan (Nama Usaha / Detail Alamat / Data Terkait)</label>
+              <textarea id="srtDetail" rows="2" placeholder="Isi bidang usaha (untuk SKU), lama tinggal (Domisili), atau tanggal &amp; sebab meninggal (Surat Kematian)"></textarea>
+            </div>
+            <div class="form-footer">
+              <p class="form-note">Surat diproses perangkat desa lalu disahkan Kepala Desa dengan QR Code verifikasi.</p>
+              <button type="submit" class="btn btn-primary" id="btnSubmitSurat">Kirim Pengajuan Surat</button>
+            </div>
+          </form>
+
+          <!-- Result Kode Tracking -->
+          <div id="suratSuccessBox" class="info-banner hidden"></div>
+
+          <!-- Tab 2: Lacak & Cetak -->
+          <div id="suratLacakPane" class="surat-pane hidden">
+            <form id="formLacakSurat" class="inline-search-form">
+              <input type="text" id="lacakKode" placeholder="Kode Tracking (misal: SRT-202611-001)" required>
+              <input type="text" id="lacakNik4" maxlength="4" pattern="[0-9]{4}" placeholder="4 Digit Akhir NIK" required>
+              <button type="submit" class="btn btn-primary" id="btnLacakSurat">Lacak Status</button>
+            </form>
+            <div id="hasilLacakSurat" class="track-result-wrap"></div>
+          </div>
+
+          <!-- Tab 3: Verifikasi QR -->
+          <div id="suratVerifikasiPane" class="surat-pane hidden">
+            <form id="formVerifikasiQr" class="inline-search-form">
+              <input type="text" id="inputKodeQr" placeholder="Masukkan Kode QR (misal: VER-SRT202611001)" required>
+              <button type="submit" class="btn btn-primary" id="btnCekQr">Verifikasi Keaslian</button>
+            </form>
+            <div id="hasilVerifikasiQr" class="track-result-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Transparansi APBDes & Cek Bansos -->
+    <section id="transparansi" class="section-block section-tinted">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">AKUNTABILITAS &amp; PERLINDUNGAN SOSIAL</span>
+            <h2 class="section-heading">Transparansi APBDes &amp; Cek Status Bansos</h2>
+          </div>
+        </div>
+
+        <!-- 3 Kartu Metrik Grid (Anti-Tumpuk Vertikal) -->
+        <div class="metrics-grid-3">
+          <div class="metric-card">
+            <span class="metric-label">Total Anggaran Pendapatan</span>
+            <strong class="metric-value" id="apbTotalPendapatan">Rp 0</strong>
+            <span class="metric-sub" id="apbRealPendapatan">Realisasi: Rp 0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Total Anggaran Belanja</span>
+            <strong class="metric-value" id="apbTotalBelanja">Rp 0</strong>
+            <span class="metric-sub" id="apbRealBelanja">Realisasi: Rp 0</span>
+          </div>
+          <div class="metric-card metric-card-accent">
+            <span class="metric-label">Penyerapan Belanja Desa</span>
+            <strong class="metric-value" id="apbPersentase">0%</strong>
+            <span class="metric-sub" id="bansosSummaryText">Program Bansos: BLT, DTKS, Pangan &amp; Stunting</span>
+          </div>
+        </div>
+
+        <div class="split-2col">
+          <!-- Tabel Ringkasan APBDes -->
+          <div class="card-panel">
+            <h3 class="card-title">Rincian Pelaksanaan APBDes</h3>
+            <div class="table-wrap">
+              <table class="fluid-table">
+                <thead>
+                  <tr>
+                    <th>Bidang / Uraian</th>
+                    <th>Jenis</th>
+                    <th>Anggaran</th>
+                    <th>Realisasi</th>
+                  </tr>
+                </thead>
+                <tbody id="publicApbdesBody">
+                  <tr><td colspan="4" class="text-center">Menunggu data APBDes...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Cek Status Bantuan Sosial (Sensor Privasi Otomatis) -->
+          <div class="card-panel">
+            <h3 class="card-title">Cek Penerima Bantuan Sosial</h3>
+            <p class="card-desc">Cek keikutsertaan program <strong>BLT, DTKS, Ketahanan Pangan, &amp; Penanganan Stunting</strong>. Demi privasi, nama &amp; NIK ditampilkan tersensor.</p>
+            <form id="formCekBansos" class="stack-form">
+              <div class="form-group">
+                <label for="cekBansosNik">Nomor Induk Kependudukan (16 Digit)</label>
+                <div class="input-with-btn">
+                  <input type="text" id="cekBansosNik" maxlength="16" pattern="[0-9]{16}" placeholder="Masukkan 16 digit NIK..." required>
+                  <button type="submit" class="btn btn-primary" id="btnCekBansos">Cek Status</button>
+                </div>
+              </div>
+            </form>
+            <div id="hasilCekBansos" class="bansos-result"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Layanan Pengaduan Warga (Lapor Warga) -->
+    <section id="lapor-warga" class="section-block">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">KANAL ASPIRASI &amp; PENGADUAN</span>
+            <h2 class="section-heading">Lapor Warga (Pemerintah Desa &amp; BPD)</h2>
+          </div>
+        </div>
+        <div class="split-2col">
+          <form id="formLaporWarga" class="card-panel">
+            <h3 class="card-title">Kirim Aspirasi atau Laporan</h3>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="aduPelapor">Nama Pelapor (Boleh Anonim)</label>
+                <input type="text" id="aduPelapor" placeholder="Nama Anda atau Warga Kolisia B">
+              </div>
+              <div class="form-group">
+                <label for="aduKontak">No. HP / WhatsApp (Opsional)</label>
+                <input type="text" id="aduKontak" placeholder="0812xxxxxxxx">
+              </div>
+              <div class="form-group">
+                <label for="aduTujuan">Tujuan Pengaduan *</label>
+                <select id="aduTujuan" required>
+                  <option value="Pemerintah Desa">Pemerintah Desa Kolisia B</option>
+                  <option value="BPD">BPD (Badan Permusyawaratan Desa)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="aduKategori">Kategori *</label>
+                <select id="aduKategori" required>
+                  <option value="Infrastruktur">Infrastruktur &amp; Jalan</option>
+                  <option value="Pelayanan Publik">Pelayanan Publik</option>
+                  <option value="Bantuan Sosial">Bantuan Sosial</option>
+                  <option value="Keamanan &amp; Ketertiban">Keamanan &amp; Ketertiban</option>
+                  <option value="Lainnya">Aspirasi Lainnya</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="aduJudul">Judul Laporan *</label>
+              <input type="text" id="aduJudul" placeholder="Ringkasan singkat laporan Anda" required>
+            </div>
+            <div class="form-group">
+              <label for="aduIsi">Detail Laporan / Lokasi *</label>
+              <textarea id="aduIsi" rows="3" placeholder="Jelaskan lokasi dusun dan detail kejadian/aspirasi..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btnSubmitPengaduan">Kirim Laporan</button>
+            <div id="pengaduanSuccessBox" class="info-banner hidden"></div>
+          </form>
+
+          <div class="card-panel">
+            <h3 class="card-title">Lacak Tindak Lanjut Pengaduan</h3>
+            <p class="card-desc">Masukkan kode tiket pengaduan (contoh: <code>ADU-202611-001</code>) untuk melihat tanggapan resmi Pemerintah Desa atau BPD.</p>
+            <form id="formLacakPengaduan" class="inline-search-form">
+              <input type="text" id="lacakKodeAduan" placeholder="Kode Tiket (ADU-...)" required>
+              <button type="submit" class="btn btn-secondary" id="btnLacakPengaduan">Cek Tiket</button>
+            </form>
+            <div id="hasilLacakPengaduan" class="track-result-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pemerintahan & Lembaga Desa -->
+    <section id="pemerintahan" class="section-block section-tinted">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">STRUKTUR &amp; KELEMBAGAAN DESA</span>
+            <h2 class="section-heading">Perangkat Desa &amp; Lembaga Kemasyarakatan</h2>
+          </div>
+          <div class="pill-tabs">
+            <button type="button" class="pill-tab active" data-pem-tab="perangkat">Perangkat Desa</button>
+            <button type="button" class="pill-tab" data-pem-tab="lembaga">Lembaga (PKK, BPD, Karang Taruna, Posyandu)</button>
+          </div>
+        </div>
+        <div id="perangkatGrid" class="cards-grid-4">
+          <div class="empty-state">Memuat susunan perangkat desa...</div>
+        </div>
+        <div id="lembagaGrid" class="cards-grid-2 hidden">
+          <div class="empty-state">Memuat data lembaga desa...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUMDes & Marketplace Desa -->
+    <section id="bumdes" class="section-block">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">EKONOMI KREATIF &amp; PRODUK LOKAL</span>
+            <h2 class="section-heading">BUMDes &amp; Marketplace Desa Kolisia B</h2>
+          </div>
+          <div class="section-tools">
+            <input type="search" id="publicProdukSearch" class="input-compact" placeholder="Cari produk desa..." aria-label="Cari produk">
+            <select id="publicProdukFilter" class="input-compact" aria-label="Filter kategori produk">
+              <option value="Semua">Semua Kategori</option>
+              <option value="Olahan Pangan">Olahan Pangan</option>
+              <option value="Kerajinan Lokal">Kerajinan Lokal</option>
+              <option value="Hasil Bumi">Hasil Bumi</option>
+              <option value="Jasa BUMDes">Jasa BUMDes</option>
+            </select>
+          </div>
+        </div>
+        <div id="publicProdukGrid" class="news-grid">
+          <div class="empty-state">Memuat katalog produk BUMDes...</div>
+        </div>
+        <div id="publicProdukPagination" class="pagination-bar"></div>
+      </div>
+    </section>
+
+    <!-- Lokasi Geografis & Peta GPS Interaktif -->
+    <section id="lokasi-gps" class="section-block section-tinted">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">GEOGRAFIS &amp; NAVIGASI GPS</span>
+            <h2 class="section-heading">Lokasi Desa Kolisia B, Kec. Magepanda, Kab. Sikka</h2>
+          </div>
+        </div>
+        <div class="split-2col">
+          <div class="card-panel">
+            <h3 class="card-title">Profil Wilayah &amp; Koordinat GPS</h3>
+            <p id="lokasiDeskripsi" class="card-desc">Desa Kolisia B terletak di Kecamatan Magepanda, Kabupaten Sikka, Pulau Flores, Provinsi Nusa Tenggara Timur.</p>
+            <div class="geo-meta-list">
+              <div class="geo-row"><span>Alamat Kantor</span><strong id="geoAlamat">Jalan Trans Utara Flores, Desa Kolisia B, Kec. Magepanda, Kab. Sikka, NTT</strong></div>
+              <div class="geo-row"><span>Luas Wilayah</span><strong id="geoLuas">12,4 km²</strong></div>
+              <div class="geo-row"><span>Batas Utara / Selatan</span><strong id="geoBatasUS">Laut Flores / Perbukitan Magepanda</strong></div>
+              <div class="geo-row"><span>Batas Timur / Barat</span><strong id="geoBatasTB">Desa Kolisia / Desa Done - Reroroja</strong></div>
+              <div class="geo-row"><span>Titik Koordinat GPS</span><strong id="geoKoordinat">-8.567500, 122.043500</strong></div>
+            </div>
+            <div class="geo-actions">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=-8.567500,122.043500" target="_blank" rel="noopener" id="btnGoogleMapsRoute" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Buka Rute GPS (Google Maps)
+              </a>
+              <button type="button" class="btn btn-secondary" data-action="copy-coords">Salin Koordinat</button>
+            </div>
+          </div>
+          <div class="card-panel map-card">
+            <div id="desaMap" class="desa-map" aria-label="Peta Interaktif Desa Kolisia B"></div>
+            <p class="map-caption">Geser atau perbesar peta OpenStreetMap di atas untuk melihat posisi Kecamatan Magepanda, Kabupaten Sikka, Flores, NTT.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- PANEL DASHBOARD ADMIN & KEPALA DESA -->
+  <section id="adminPanel" class="admin-panel hidden" aria-label="Dashboard Administrasi Desa">
+    <div class="admin-topbar">
+      <div class="container admin-topbar-inner">
+        <div>
+          <span class="admin-badge" id="adminRoleBadge">ADMIN DESA</span>
+          <h2 id="adminGreeting">Panel Administrasi Desa Kolisia B</h2>
+        </div>
+        <div class="admin-topbar-actions">
+          <button type="button" class="btn btn-secondary btn-sm" data-action="back-to-public">Lihat Portal Publik</button>
+          <button type="button" class="btn btn-danger btn-sm" data-action="logout">Keluar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container admin-body">
+      <!-- 3 Kartu Statistik Admin -->
+      <div class="metrics-grid-3" id="adminMetricsGrid">
+        <div class="metric-card"><span class="metric-label">Penduduk Terdata</span><strong class="metric-value" id="admStatPenduduk">0</strong><span class="metric-sub">Database Kependudukan</span></div>
+        <div class="metric-card"><span class="metric-label">Antrean Surat</span><strong class="metric-value" id="admStatSurat">0</strong><span class="metric-sub" id="admStatSuratKades">Menunggu Kades: 0</span></div>
+        <div class="metric-card metric-card-accent"><span class="metric-label">Aduan Aktif &amp; Order BUMDes</span><strong class="metric-value" id="admStatAduan">0</strong><span class="metric-sub" id="admStatOrder">Pesanan Menunggu: 0</span></div>
+      </div>
+
+      <!-- Tab Modul Administrasi -->
+      <div class="admin-tabs-wrap" id="adminModuleTabs">
+        <button type="button" class="admin-tab active" data-module="surat">Layanan Surat</button>
+        <button type="button" class="admin-tab" data-module="penduduk">Data Penduduk</button>
+        <button type="button" class="admin-tab" data-module="apbdes">Keuangan APBDes</button>
+        <button type="button" class="admin-tab" data-module="bansos">Bantuan Sosial</button>
+        <button type="button" class="admin-tab" data-module="pengaduan">Pengaduan Warga</button>
+        <button type="button" class="admin-tab" data-module="perangkat">Perangkat Desa</button>
+        <button type="button" class="admin-tab" data-module="aset">Aset &amp; Inventaris</button>
+        <button type="button" class="admin-tab" data-module="lembaga">Lembaga Desa</button>
+        <button type="button" class="admin-tab" data-module="berita">Berita &amp; Info</button>
+        <button type="button" class="admin-tab" data-module="produk">Produk BUMDes</button>
+        <button type="button" class="admin-tab" data-module="pesanan">Pesanan BUMDes</button>
+        <button type="button" class="admin-tab" data-module="profil">Profil &amp; Kalibrasi GPS</button>
+      </div>
+
+      <!-- Toolbar & Tabel Modul -->
+      <div id="adminTableContainer" class="card-panel">
+        <div class="admin-toolbar">
+          <div class="admin-toolbar-left">
+            <input type="search" id="adminSearchInput" class="input-compact" placeholder="Cari data modul...">
+            <select id="adminFilterSelect" class="input-compact"></select>
+          </div>
+          <div class="admin-toolbar-right">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnAdminRefresh">Refresh Data</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnAdminExport">Ekspor CSV</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btnAdminAdd">+ Tambah Data</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="fluid-table" id="adminDataTable">
+            <thead id="adminTableHead"></thead>
+            <tbody id="adminTableBody"></tbody>
+          </table>
+        </div>
+        <div id="adminPagination" class="pagination-bar"></div>
+      </div>
+
+      <!-- Panel Profil & Kalibrasi GPS -->
+      <form id="adminProfilForm" class="card-panel hidden">
+        <h3 class="card-title">Pengaturan Profil Desa &amp; Kalibrasi Titik GPS</h3>
+        <div class="form-grid-2">
+          <div class="form-group"><label for="profNamaDesa">Nama Desa</label><input type="text" id="profNamaDesa"></div>
+          <div class="form-group"><label for="profNamaKades">Nama Kepala Desa (Untuk Kop &amp; Pengesahan)</label><input type="text" id="profNamaKades"></div>
+          <div class="form-group"><label for="profNipdKades">NIPD Kepala Desa</label><input type="text" id="profNipdKades"></div>
+          <div class="form-group"><label for="profLuas">Luas Wilayah</label><input type="text" id="profLuas"></div>
+          <div class="form-group"><label for="profTelepon">Nomor Telepon Kantor</label><input type="text" id="profTelepon"></div>
+          <div class="form-group"><label for="profEmail">Email Resmi Desa</label><input type="email" id="profEmail"></div>
+          <div class="form-group"><label for="profLat">Latitude GPS Kantor Desa</label><input type="text" id="profLat" placeholder="-8.567500"></div>
+          <div class="form-group"><label for="profLng">Longitude GPS Kantor Desa</label><input type="text" id="profLng" placeholder="122.043500"></div>
+        </div>
+        <div class="form-group"><label for="profAlamat">Alamat Lengkap Kantor Desa</label><input type="text" id="profAlamat"></div>
+        <div class="form-group"><label for="profHeroImg">URL Foto Banner Hero</label><input type="url" id="profHeroImg"></div>
+        <div class="form-group"><label for="profDeskripsiLokasi">Deskripsi Lokasi Desa</label><textarea id="profDeskripsiLokasi" rows="3"></textarea></div>
+        <div class="form-footer">
+          <button type="button" class="btn btn-secondary" id="btnDetectGps">Ambil Titik GPS Lokasi Saat Ini</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveProfil">Simpan Perubahan Profil &amp; GPS</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer Deep Forest Green -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <div class="footer-brand">
+          <svg width="36" height="32" viewBox="0 0 44 36" fill="none" stroke="#F7F5F0" stroke-width="1.6"><path d="M2 28c7-6 13-16 20-16s13 10 20 16"/><path d="M12 28v-8l10-6 10 6v8"/><path d="M22 14V6"/><path d="M19 9h6"/></svg>
+          <div>
+            <small>PEMERINTAH DESA</small>
+            <strong>DESA KOLISIA B</strong>
+          </div>
+        </div>
+        <p class="footer-desc">Portal pelayanan publik mandiri dan transparansi pemerintahan Desa Kolisia B, Kecamatan Magepanda, Kabupaten Sikka, Flores, NTT.</p>
+      </div>
+      <div>
+        <h4>AKSES CEPAT</h4>
+        <ul class="footer-links">
+          <li><a href="#layanan-surat">Layanan Surat Online</a></li>
+          <li><a href="#transparansi">Transparansi APBDes</a></li>
+          <li><a href="#transparansi">Cek Penerima Bansos</a></li>
+          <li><a href="#lapor-warga">Lapor Warga (Pemdes/BPD)</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>INFORMASI &amp; EKONOMI</h4>
+        <ul class="footer-links">
+          <li><a href="#berita">Berita &amp; Agenda Desa</a></li>
+          <li><a href="#pemerintahan">Perangkat &amp; Lembaga Desa</a></li>
+          <li><a href="#bumdes">BUMDes &amp; Marketplace</a></li>
+          <li><a href="#lokasi-gps">Peta Lokasi GPS</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>HUBUNGI KAMI</h4>
+        <ul class="footer-contact">
+          <li id="footerAlamat">Kec. Magepanda, Kab. Sikka, Flores, NTT</li>
+          <li id="footerTelp">Telp: 0812-0000-0000</li>
+          <li id="footerEmail">pemdes.kolisiab@sikkakab.go.id</li>
+        </ul>
+        <div class="footer-territory">
+          <svg width="78" height="44" viewBox="0 0 120 64" fill="none" stroke="#8FA895" stroke-width="1.4" aria-hidden="true">
+            <path d="M10 38 Q 30 16, 56 26 T 108 24 Q 112 40, 86 48 T 24 46 Z"/>
+            <circle cx="64" cy="30" r="4" fill="#D16014" stroke="none"/>
+          </svg>
+          <span>MAGEPANDA • SIKKA • NTT</span>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>&copy; 2026 Pemerintah Desa Kolisia B — Kec. Magepanda, Kab. Sikka.</span>
+      <span>Portal Resmi &amp; Administrasi Terpadu</span>
+    </div>
+  </footer>
+
+  <!-- MODAL KUSTOM SERBAGUNA -->
+  <div id="appModalBackdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
+    <div class="modal-card" id="appModalCard">
+      <div class="modal-header">
+        <h3 id="appModalTitle">Judul Modal</h3>
+        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Tutup Modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="appModalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- AREA CETAK SURAT RESMI A4/F4 (HANYA TAMPIL SAAT PRINT) -->
+  <div id="printArea" class="print-only"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" crossorigin=""></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/public.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
